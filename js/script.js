@@ -1,114 +1,110 @@
+const canvas = document.getElementById('canvas');
+const ctx = canvas.getContext('2d');
 
-var canvas = document.getElementById('canvas');
-var ctx = canvas.getContext("2d");
+const pressedKeys = {};
 
-var teclas = {};
-
-var bola = {
-	x: canvas.width / 2 - 15,
-	y: canvas.height / 2 - 15,
-	altura: 30,
-	largura: 30,
-	dirx: -1,
-	diry: 1,
-	mod: 0,
-	speed:1
+const ball = {
+  x: canvas.width / 2 - 15,
+  y: canvas.height / 2 - 15,
+  height: 30,
+  width: 30,
+  directionX: -1,
+  directionY: 1,
+  modifier: 0,
+  speed: 1
 };
 
-var esquerda = {
-	x: 10,
-	y: canvas.height / 2 - 60,
-	altura: 120,
-	largura: 30,
-	score: 0,
-	speed: 10
+const player1 = {
+  x: 10,
+  y: canvas.height / 2 - 60,
+  height: 120,
+  width: 30,
+  score: 0,
+  speed: 10
 };
-var direita = {
-	x: 560,
-	y: canvas.height / 2 - 60,
-	altura: 120,
-	largura: 30,
-	score: 0,
-	speed: 10
+const player2 = {
+  x: 560,
+  y: canvas.height / 2 - 60,
+  height: 120,
+  width: 30,
+  score: 0,
+  speed: 10
 };
 
-document.addEventListener("keydown", function(e){
-	teclas[e.keyCode] = true;
-	//alert(e.keyCode);
-}, false);
+document.addEventListener('keydown', event => pressedKeys[event.keyCode] = true);
+document.addEventListener('keyup', event => delete pressedKeys[event.keyCode]);
 
-document.addEventListener("keyup", function(e){
-	delete teclas[e.keyCode];
-}, false);
+const movePlayer = () => {
+  if (87 in pressedKeys && player1.y > 0) {
+    player1.y -= player1.speed;
+  } else {
+    if (83 in pressedKeys && player1.y + player1.height < canvas.height) {
+      player1.y += player1.speed;
+    }
+  }
 
-function movebloco(){
-	if(87 in teclas && esquerda.y > 0)
-		esquerda.y -= esquerda.speed;
-	else if(83 in teclas && esquerda.y + esquerda.altura < canvas.height)
-		esquerda.y += esquerda.speed;
-	if(38 in teclas && direita.y > 0)
-		direita.y -= direita.speed;
-	else if(40 in teclas && direita.y + direita.altura < canvas.height)
-		direita.y += direita.speed;
+  if (38 in pressedKeys && player2.y > 0) {
+    player2.y -= player2.speed;
+  } else {
+    if (40 in pressedKeys && player2.y + player2.height < canvas.height) {
+      player2.y += player2.speed;
+    }
+  }
 }
 
-function movebola(){
-	if(bola.y + bola.altura >= esquerda.y && bola.y <= esquerda.y + esquerda.altura && bola.x <= esquerda.x + esquerda.largura){
-		bola.dirx = 1;
-		bola.mod += 0.2;
+const moveBall = () => {
+  if (ball.y + ball.height >= player1.y && ball.y <= player1.y + player1.height && ball.x <= player1.x + player1.width) {
+    ball.directionX = 1;
+    ball.modifier += 0.2;
 
-	}else if(bola.y + bola.altura >= direita.y && bola.y <= direita.y + direita.altura && bola.x + bola.largura >= direita.x){
-		bola.dirx = -1;
-		bola.mod += 0.2;
-	}
+  } else if (ball.y + ball.height >= player2.y && ball.y <= player2.y + player2.height && ball.x + ball.width >= player2.x) {
+    ball.directionX = -1;
+    ball.modifier += 0.2;
+  }
 
-	if(bola.y <= 0){
-		bola.diry = 1;
-	}else if(bola.y + bola.altura >= canvas.height){
-		bola.diry = -1;
-	}
+  if (ball.y <= 0) {
+    ball.directionY = 1;
+  } else if (ball.y + ball.height >= canvas.height) {
+    ball.directionY = -1;
+  }
 
-	bola.x += (bola.speed + bola.mod) * bola.dirx;
-	bola.y += (bola.speed + bola.mod) * bola.diry;
+  ball.x += (ball.speed + ball.modifier) * ball.directionX;
+  ball.y += (ball.speed + ball.modifier) * ball.directionY;
 
-	if(bola.x < esquerda.x + esquerda.largura -15){
-		newgame("player 2");
-	}else if(bola.x + bola.largura > direita.x + 15){
-		newgame("player 1");
-	}
+  if (ball.x < player1.x + player1.width - 15) {
+    newgame('player 2');
+  } else if (ball.x + ball.width > player2.x + 15) {
+    newgame('player 1');
+  }
 }
 
-function newgame(winner){
-	if(winner == "player 1"){
-		esquerda.score++;
-	}else{
-		direita.score ++;
-	}
+const newgame = winner => {
+  if (winner == 'player 1') {
+    player1.score++;
+  } else {
+    player2.score++;
+  }
 
-	esquerda.y = canvas.height / 2 - esquerda.altura / 2;
-	direita.y = esquerda.y;
-	bola.y = canvas.height / 2 - bola.altura / 2;
-	bola.x = canvas.width / 2 - bola.largura/ 2;
-	bola.mod = 0;
+  player1.y = canvas.height / 2 - player1.height / 2;
+  player2.y = player1.y;
+  ball.y = canvas.height / 2 - ball.height / 2;
+  ball.x = canvas.width / 2 - ball.width / 2;
+  ball.modifier = 0;
 };
 
-function desenha() {
-	ctx.clearRect(0, 0, canvas.width, canvas.height);
+const draw = () => {
+  ctx.clearRect(0, 0, canvas.width, canvas.height);
 
-	movebloco();
-	movebola();
+  movePlayer();
+  moveBall();
 
-	ctx.fillStyle = "white";
-	ctx.fillRect(esquerda.x, esquerda.y, esquerda.largura, esquerda.altura);
-	ctx.fillRect(direita.x, direita.y, direita.largura, direita.altura);
-	ctx.fillRect(bola.x, bola.y, bola.largura, bola.altura);
-	ctx.font = "20px Arial";
-	ctx.fillText("Player 1: " + esquerda.score, 50, 20);
-	ctx.fillText("Player 2: " + direita.score, canvas.width - 160, 20);
+  ctx.fillStyle = 'white';
+  ctx.fillRect(player1.x, player1.y, player1.width, player1.height);
+  ctx.fillRect(player2.x, player2.y, player2.width, player2.height);
+  ctx.fillRect(ball.x, ball.y, ball.width, ball.height);
+  ctx.font = '20px Arial';
+  ctx.fillText('Player 1: ' + player1.score, 50, 20);
+  ctx.fillText('Player 2: ' + player2.score, canvas.width - 160, 20);
 }
 
-setInterval(desenha, 10);
-
-
-
-
+setInterval(draw, 10);
